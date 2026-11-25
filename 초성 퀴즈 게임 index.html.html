@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌟 초성 퀴즈 게임</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #FFF9C4 0%, #FFE0B2 50%, #FFCCBC 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 28px;
+            padding: 40px 32px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 8px;
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77, #4D96FF, #9B59B6);
+        }
+
+        .emoji-top {
+            font-size: 52px;
+            margin-bottom: 12px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+
+        h1 {
+            font-size: 26px;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 28px;
+        }
+
+        .progress-container {
+            background: #f0f0f0;
+            border-radius: 20px;
+            height: 12px;
+            margin-bottom: 28px;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #FF6B6B, #FFD93D, #6BCB77);
+            border-radius: 20px;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        .question-number {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 6px;
+        }
+
+        .question-text {
+            font-size: 22px;
+            color: #444;
+            margin-bottom: 24px;
+            line-height: 1.5;
+            min-height: 60px;
+        }
+
+        .chosung-display {
+            font-size: 64px;
+            font-weight: 800;
+            color: #FF6B6B;
+            letter-spacing: 16px;
+            margin-bottom: 16px;
+            font-family: 'Noto Sans KR', sans-serif;
+            text-shadow: 3px 3px 0 rgba(255, 107, 107, 0.2);
+        }
+
+        .input-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        #answerInput {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 18px;
+            border: 3px solid #ddd;
+            border-radius: 14px;
+            outline: none;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            text-align: center;
+            font-family: inherit;
+        }
+
+        #answerInput:focus {
+            border-color: #4D96FF;
+            box-shadow: 0 0 0 4px rgba(77, 150, 255, 0.2);
+        }
+
+        .btn {
+            padding: 14px 28px;
+            font-size: 16px;
+            font-weight: 700;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+            font-family: inherit;
+        }
+
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        .btn:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-check {
+            background: linear-gradient(135deg, #6BCB77, #4CAF50);
+            color: white;
+            box-shadow: 0 4px 15px rgba(107, 203, 119, 0.4);
+        }
+
+        .btn-next {
+            background: linear-gradient(135deg, #4D96FF, #357ABD);
+            color: white;
+            box-shadow: 0 4px 15px rgba(77, 150, 255, 0.4);
+            display: none;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #FFD93D, #FF9F43);
+            color: white;
+            font-size: 18px;
+            padding: 16px 40px;
+            box-shadow: 0 6px 20px rgba(255, 159, 67, 0.5);
+            margin-top: 20px;
+        }
+
+        .feedback {
+            min-height: 60px;
+            margin-top: 16px;
+            padding: 16px;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 16px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .feedback.correct {
+            display: block;
+            background: #E8F5E9;
+            color: #2E7D32;
+            border: 2px solid #6BCB77;
+        }
+
+        .feedback.wrong {
+            display: block;
+            background: #FFEBEE;
+            color: #C62828;
+            border: 2px solid #FF6B6B;
+        }
+
+        .score-display {
+            margin-top: 20px;
+            padding: 12px;
+            background: #FFF3E0;
+            border-radius: 12px;
+            font-size: 15px;
+            color: #E65100;
+        }
+
+        .score-display strong {
+            font-size: 20px;
+            color: #FF6B6B;
+        }
+
+        .start-screen h1 {
+            font-size: 32px;
+            color: #FF6B6B;
+            margin-bottom: 8px;
+        }
+
+        .start-screen .emoji-top {
+            font-size: 72px;
+            margin-bottom: 16px;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .quiz-screen {
+            display: none;
+        }
+
+        .result-screen {
+            display: none;
+        }
+
+        .result-screen.active {
+            display: block;
+        }
+
+        .final-score {
+            font-size: 72px;
+            font-weight: 900;
+            color: #FF6B6B;
+            margin: 20px 0;
+            text-shadow: 4px 4px 0 rgba(255, 107, 107, 0.2);
+        }
+
+        .score-label {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .score-detail {
+            background: #f8f8f8;
+            border-radius: 14px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            font-size: 16px;
+        }
+
+        .score-row:last-child {
+            border-bottom: none;
+            font-weight: 700;
+            font-size: 20px;
+            color: #FF6B6B;
+            padding-top: 12px;
+            margin-top: 8px;
+            border-top: 2px solid #ddd;
+        }
+
+        .message {
+            font-size: 20px;
+            margin: 16px 0;
+            padding: 12px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+
+        .message.excellent {
+            background: #E8F5E9;
+            color: #2E7D32;
+        }
+
+        .message.good {
+            background: #FFF3E0;
+            color: #E65100;
+        }
+
+        .message.okay {
+            background: #FFF9C4;
+            color: #F57F17;
+        }
+
+        .message.tryagain {
+            background: #FFEBEE;
+            color: #C62828;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .stars {
+            font-size: 32px;
+            letter-spacing: 8px;
+            margin: 12px 0;
+        }
+
+        /* 모바일 최적화 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 28px 20px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 22px;
+            }
+
+            .chosung-display {
+                font-size: 48px;
+                letter-spacing: 12px;
+            }
+
+            .question-text {
+                font-size: 18px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .final-score {
+                font-size: 56px;
+            }
+        }
+
+        @media (max-width: 360px) {
+            .container {
+                padding: 20px 16px;
+            }
+
+            .chosung-display {
+                font-size: 40px;
+                letter-spacing: 8px;
+            }
+
+            .input-section {
+                flex-direction: column;
+            }
+
+            .btn-check,
+            .btn-next {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 시작 화면 -->
+        <div id="startScreen" class="start-screen">
+            <div class="emoji-top">🧠</div>
+            <h1>초성 퀴즈 게임</h1>
+            <p class="subtitle">초성을 보고 정답을 맞혀 보세요!<br>총 10문제, 100점 만점!</p>
+            <div class="progress-container">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            <button class="btn btn-start" onclick="startGame()">게임 시작!</button>
+        </div>
+
+        <!-- 퀴즈 화면 -->
+        <div id="quizScreen" class="quiz-screen">
+            <div class="emoji-top" id="emojiTop">💪</div>
+            <h1>초성 퀴즈</h1>
+            <div class="question-number" id="questionNumber">문제 1 / 10</div>
+            <div class="question-text" id="questionText"></div>
+            <div class="chosung-display" id="chosungDisplay"></div>
+            <div class="input-section">
+                <input type="text" id="answerInput" placeholder="답을 입력하세요" autocomplete="off">
+                <button class="btn btn-check" id="checkBtn" onclick="checkAnswer()">확인</button>
+            </div>
+            <div class="feedback" id="feedback"></div>
+            <div class="score-display">
+                현재 점수: <strong id="currentScore">0</strong> 점
+            </div>
+            <button class="btn btn-next" id="nextBtn" onclick="nextQuestion()">다음 문제 →</button>
+        </div>
+
+        <!-- 결과 화면 -->
+        <div id="resultScreen" class="result-screen">
+            <div class="emoji-top" id="emojiTopResult">🎉</div>
+            <h1>퀴즈 완료!</h1>
+            <div class="final-score" id="finalScore">0</div>
+            <div class="score-label">최종 점수</div>
+            <div class="stars" id="starsDisplay"></div>
+            <div class="message" id="resultMessage"></div>
+            <div class="score-detail">
+                <div class="score-row">
+                    <span>맞힌 문제</span>
+                    <span id="correctCount">0 / 10</span>
+                </div>
+                <div class="score-row">
+                    <span>틀린 문제</span>
+                    <span id="wrongCount">0 / 10</span>
+                </div>
+                <div class="score-row">
+                    <span>획득 점수</span>
+                    <span id="earnedScore">0 점</span>
+                </div>
+            </div>
+            <button class="btn btn-start" onclick="resetGame()">다시 시작!</button>
+        </div>
+    </div>
+
+    <script>
+        // ===== 퀴즈 데이터 (초성 + 정답 + 질문 + 사실) =====
+        const quizData = [
+            {
+                chosung: 'ㅅㅇ',
+                answer: '서울',
+                question: '대한민국의 수도는 어디일까요?',
+                fact: '서울은 대한민국의 수도로, 약 950만 명이 살고 있는 대도시예요.'
+            },
+            {
+                chosung: 'ㅂㄷㅅ',
+                answer: '백두산',
+                question: '한반도에서 가장 높은 산은 어디일까요?',
+                fact: '백두산은 높이가 2,744m로 한반도에서 가장 높은 산이에요. 북한에 위치해 있어요.'
+            },
+            {
+                chosung: 'ㅁㄱㅎ',
+                answer: '무궁화',
+                question: '대한민국의 국화(나라꽃)는 무엇일까요?',
+                fact: '무궁화는 대한민국의 국화로, "영원히 피고 또 피어서 지지 않는 꽃"이라는 뜻을 가지고 있어요.'
+            },
+            {
+                chosung: 'ㅅㅈㄷㅇ',
+                answer: '세종대왕',
+                question: '한글(훈민정음)을 창제하신 조선의 왕은 누구일까요?',
+                fact: '세종대왕은 1418년부터 1450년까지 조선을 다스렸으며, 1443년에 한글을 창제했어요.'
+            },
+            {
+                chosung: 'ㅈㅈㄷ',
+                answer: '제주도',
+                question: '대한민국에서 가장 큰 섬은 어디일까요?',
+                fact: '제주도는 대한민국에서 가장 큰 섬으로, 면적이 약 1,833km²예요. 아름다운 자연 경관으로 유명하죠.'
+            },
+            {
+                chosung: 'ㄴㄷㄱ',
+                answer: '낙동강',
+                question: '대한민국에서 가장 긴 강은 어디일까요?',
+                fact: '낙동강은 길이가 약 525km로 대한민국에서 가장 긴 강이에요. 영남 지방을 흐르는 강이죠.'
+            },
+            {
+                chosung: 'ㅁㅅ',
+                answer: '목성',
+                question: '태양계에서 가장 큰 행성은 무엇일까요?',
+                fact: '목성은 태양계에서 가장 큰 행성으로, 지름이 약 14만 km로 지구의 약 11배예요. 대적점이라는 거대한 폭풍으로 유명해요.'
+            },
+            {
+                chosung: 'ㅅㄹㅁ',
+                answer: '숭례문',
+                question: '대한민국의 국보 제1호는 무엇일까요?',
+                fact: '숭례문(남대문)은 대한민국의 국보 제1호로, 조선 시대인 1398년에 지어진 한양 도성의 남쪽 문이에요.'
+            },
+            {
+                chosung: 'ㄷㅇㅇㅁㄷ',
+                answer: '다이아몬드',
+                question: '지구에서 자연적으로 발견되는 가장 단단한 물질은 무엇일까요?',
+                fact: '다이아몬드는 자연에서 발견되는 가장 단단한 물질로, 모스 경도 10이에요. 탄소로 이루어져 있죠.'
+            },
+            {
+                chosung: 'ㄷ',
+                answer: '달',
+                question: ' 지구의 유일한 자연 위성은 무엇일까요?',
+                fact: '달은 지구의 유일한 자연 위성으로, 지구에서 약 38만 km 떨어져 있어요. 반지름이 약 1,737km로 지구의 약 1/4 크기예요.'
+            }
+        ];
+
+        // ===== 게임 상태 =====
+        let currentIndex = 0;
+        let score = 0;
+        let gameStarted = false;
+
+        // ===== DOM 요소 =====
+        const startScreen = document.getElementById('startScreen');
+        const quizScreen = document.getElementById('quizScreen');
+        const resultScreen = document.getElementById('resultScreen');
+        const chosungDisplay = document.getElementById('chosungDisplay');
+        const questionText = document.getElementById('questionText');
+        const questionNumber = document.getElementById('questionNumber');
+        const progressBar = document.getElementById('progressBar');
+        const answerInput = document.getElementById('answerInput');
+        const checkBtn = document.getElementById('checkBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const feedback = document.getElementById('feedback');
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const currentScoreEl = document.getElementById('currentScore');
+        const finalScoreEl = document.getElementById('finalScore');
+        const starsDisplay = document.getElementById('starsDisplay');
+        const resultMessage = document.getElementById('resultMessage');
+        const correctCountEl = document.getElementById('correctCount');
+        const wrongCountEl = document.getElementById('wrongCount');
+        const earnedScoreEl = document.getElementById('earnedScore');
+        const emojiTop = document.getElementById('emojiTop');
+
+        // ===== 함수 =====
+
+        function startGame() {
+            currentIndex = 0;
+            score = 0;
+            gameStarted = true;
+
+            startScreen.style.display = 'none';
+            quizScreen.style.display = 'block';
+            resultScreen.classList.remove('active');
+            resultScreen.style.display = 'none';
+
+            showQuestion();
+        }
+
+        function showQuestion() {
+            const q = quizData[currentIndex];
+
+            chosungDisplay.textContent = q.chosung;
+            questionText.textContent = q.question;
+            questionNumber.textContent = `문제 ${currentIndex + 1} / ${quizData.length}`;
+            progressBar.style.width = `${((currentIndex) / quizData.length) * 100}%`;
+
+            answerInput.value = '';
+            answerInput.disabled = false;
+            answerInput.focus();
+            checkBtn.disabled = false;
+            nextBtn.style.display = 'none';
+            feedback.style.display = 'none';
+            feedback.className = 'feedback';
+            scoreDisplay.style.display = 'block';
+            currentScoreEl.textContent = score;
+
+            // 이모티콘 변경
+            const emojis = ['💪', '🤔', '🧐', '😊', '🌟', '🎯', '💡', '🔥', '⭐', '🏆'];
+            emojiTop.textContent = emojis[currentIndex] || '💪';
+        }
+
+        function checkAnswer() {
+            const userAnswer = answerInput.value.trim().toLowerCase();
+            const correctAnswer = quizData[currentIndex].answer.toLowerCase();
+
+            if (userAnswer === '') {
+                feedback.style.display = 'block';
+                feedback.className = 'feedback wrong';
+                feedback.innerHTML = '⚠️ 답을 입력하고 확인해 주세요!';
+                return;
+            }
+
+            if (userAnswer === correctAnswer) {
+                score += 10;
+                feedback.style.display = 'block';
+                feedback.className = 'feedback correct';
+                feedback.innerHTML = `
+                    ✅ 정답이에요!<br>
+                    🎯 +10점 획득!<br>
+                    📖 ${quizData[currentIndex].fact}
+                `;
+                currentScoreEl.textContent = score;
+                playCorrectSound();
+            } else {
+                feedback.style.display = 'block';
+                feedback.className = 'feedback wrong';
+                feedback.innerHTML = `
+                    ❌ 오답이에요!<br>
+                    정답은 <strong>"${quizData[currentIndex].answer}"</strong> 이에요.<br>
+                    📖 ${quizData[currentIndex].fact}
+                `;
+                playWrongSound();
+            }
+
+            answerInput.disabled = true;
+            checkBtn.disabled = true;
+            nextBtn.style.display = 'inline-block';
+            nextBtn.focus();
+        }
+
+        function nextQuestion() {
+            currentIndex++;
+
+            if (currentIndex >= quizData.length) {
+                showResults();
+            } else {
+                showQuestion();
+            }
+        }
+
+        function showResults() {
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'block';
+            resultScreen.classList.add('active');
+
+            const total = quizData.length;
+            const correct = Math.floor(score / 10);
+            const wrong = total - correct;
+
+            finalScoreEl.textContent = score;
+            correctCountEl.textContent = `${correct} / ${total}`;
+            wrongCountEl.textContent = `${wrong} / ${total}`;
+            earnedScoreEl.textContent = `${score} 점`;
+
+            // 별점 표시
+            let stars = '';
+            const starCount = score === 100 ? 5 : score >= 80 ? 4 : score >= 60 ? 3 : score >= 40 ? 2 : 1;
+            stars = '⭐'.repeat(starCount) + '☆'.repeat(5 - starCount);
+            starsDisplay.textContent = stars;
+
+            // 메시지
+            let msgClass = '';
+            let msgText = '';
+            if (score === 100) {
+                msgClass = 'excellent';
+                msgText = '🎊 퀴즈 천재! 만점을 축하해요!';
+            } else if (score >= 80) {
+                msgClass = 'excellent';
+                msgText = '🏆 거의 만점! 정말 잘했어요!';
+            } else if (score >= 60) {
+                msgClass = 'good';
+                msgText = '👍 잘했어요! 조금만 더 공부하면 만점!';
+            } else if (score >= 40) {
+                msgClass = 'okay';
+                msgText = '📚 나쁘지 않아요! 다시 도전해 볼까요?';
+            } else {
+                msgClass = 'tryagain';
+                msgText = '💪 괜찮아요! 다시 시작하면 더 잘할 수 있어요!';
+            }
+
+            resultMessage.className = `message ${msgClass}`;
+            resultMessage.textContent = msgText;
+
+            progressBar.style.width = '100%';
+            emojiTop.textContent = '🎉';
+        }
+
+        function resetGame() {
+            currentIndex = 0;
+            score = 0;
+            gameStarted = false;
+
+            resultScreen.classList.remove('active');
+            resultScreen.style.display = 'none';
+            quizScreen.style.display = 'none';
+            startScreen.style.display = 'block';
+
+            progressBar.style.width = '0%';
+            emojiTop.textContent = '🧠';
+        }
+
+        // 간단한 효과음 (Web Audio API 사용)
+        function playCorrectSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 523.25; // C5
+                osc.type = 'sine';
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) {
+                // 오디오 미지원 환경에서도 게임은 정상 작동
+            }
+        }
+
+        function playWrongSound() {
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.frequency.value = 200;
+                osc.type = 'square';
+                gain.gain.setValueAtTime(0.2, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.3);
+            } catch (e) {
+                // 오디오 미지원 환경에서도 게임은 정상 작동
+            }
+        }
+
+        // ===== 초기화 =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // 초기 상태 설정
+            startScreen.style.display = 'block';
+            quizScreen.style.display = 'none';
+            resultScreen.style.display = 'none';
+            progressBar.style.width = '0%';
+        });
+    </script>
+</body>
+</html>
